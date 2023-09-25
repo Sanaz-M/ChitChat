@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, KeyboardAvoidingView } from 'react-native';
 import { Button, Input, Image } from 'react-native-elements';
 import { StatusBar } from 'expo-status-bar';
+
+import { auth } from '../firebase';
 
 
 //Image by <a href="https://www.freepik.com/free-vector/flat-design-communication-logo-template_33513162.htm#query=chat%20logo&position=13&from_view=search&track=ais">Freepik</a>
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(
+      (authUser) => {
+        if (authUser) {
+          navigation.replace('Home');
+        }
+      });
+
+    return unsubscribe;
+  }, [])
+
 
   const sigIn = () => {
 

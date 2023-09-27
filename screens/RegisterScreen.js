@@ -1,14 +1,12 @@
+import { useState, useLayoutEffect } from 'react';
 import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Text, Button, Input } from 'react-native-elements';
-import { useState, useLayoutEffect } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-
 
 import { auth } from '../firebase';
 
 //<a href="https://www.freepik.com/free-vector/cute-sloth-yoga-cartoon-icon-illustration_11167789.htm">Image by catalyststuff</a> on Freepik
-
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,28 +17,24 @@ export default function RegisterScreen({ navigation }) {
     navigation.setOptions({
       headerBackTitle: 'Login',
     });
-  }, [navigation])
+  }, [navigation]);
 
-  const register = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((authUser) => {
-        // Update the user's profile
-        return updateProfile(authUser.user, {
-          displayName: name,
-          photoURL: imageUrl || 'https://img.freepik.com/free-vector/cute-sloth-yoga-cartoon-icon-illustration_138676-2250.jpg?w=740&t=st=1695653979~exp=1695654579~hmac=02291c67ede3ecd5a4513a8a8542eaa41e70ce02d1d4cf2e3ad23d37bdf69172',
-        });
-      })
-      .catch((error) => {
-        alert(error.message);
+  const register = async () => {
+    try {
+      const authUser = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(authUser.user, {
+        displayName: name,
+        photoURL: imageUrl || 'https://img.freepik.com/free-vector/cute-sloth-yoga-cartoon-icon-illustration_138676-2250.jpg?w=740&t=st=1695653979~exp=1695654579~hmac=02291c67ede3ecd5a4513a8a8542eaa41e70ce02d1d4cf2e3ad23d37bdf69172',
       });
+    } catch (error) {
+      alert(error.message);
+    }
   };
-
 
   return (
     <KeyboardAvoidingView behavior='padding' style={styles.container}>
       <StatusBar style="light" />
       <Text h3 style={{ marginBottom: 50 }}>Create an Account</Text>
-
       <View style={styles.inputContainer}>
         <Input
           placeholder='Full Name'
@@ -63,13 +57,12 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={(text) => setPassword(text)}
         />
         <Input
-          placeholder='Progile Picture URL (optional)'
+          placeholder='Profile Picture URL (optional)'
           type='text'
           value={imageUrl}
           onChangeText={(text) => setImageUrl(text)}
           onSubmitEditing={register}
         />
-
         <Button
           raised
           onPress={register}
@@ -80,7 +73,6 @@ export default function RegisterScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

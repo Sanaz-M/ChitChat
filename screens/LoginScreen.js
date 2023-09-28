@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, KeyboardAvoidingView } from 'react-native';
 import { Button, Input, Image } from 'react-native-elements';
 import { StatusBar } from 'expo-status-bar';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 
 import { auth } from '../firebase';
-
 
 //Image by <a href="https://www.freepik.com/free-vector/flat-design-communication-logo-template_33513162.htm#query=chat%20logo&position=13&from_view=search&track=ais">Freepik</a>
 export default function LoginScreen({ navigation }) {
@@ -12,19 +12,22 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(
-      (authUser) => {
-        if (authUser) {
-          navigation.replace('Home');
-        }
-      });
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      console.log(authUser);
+      if (authUser) {
+        navigation.replace('Home');
+      }
+    });
 
     return unsubscribe;
-  }, [])
+  }, [navigation]);
 
-
-  const sigIn = () => {
-
+  const signIn = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (
@@ -46,16 +49,16 @@ export default function LoginScreen({ navigation }) {
           type='password'
           value={password}
           onChangeText={(text) => setPassword(text)}
+          onSubmitEditing={signIn}
         />
       </View>
 
-      <Button containerStyle={styles.button} title='Login' onPress={sigIn} />
+      <Button containerStyle={styles.button} title='Login' onPress={signIn} />
       <Button containerStyle={styles.button} title='Register' type='outline' onPress={() => navigation.navigate('Register')} />
       <View style={{ height: 140 }} />
     </KeyboardAvoidingView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

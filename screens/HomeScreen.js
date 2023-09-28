@@ -2,7 +2,7 @@ import { useLayoutEffect, useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, ScrollView, View, TouchableOpacity } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import { AntDesign, SimpleLineIcons } from '@expo/vector-icons';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 
 import { auth, db } from '../firebase';
 import CustomListItem from '../components/CustomListItem';
@@ -11,8 +11,17 @@ export default function HomeScreen({ navigation }) {
   const [chats, setChats] = useState([]);
 
   useEffect(() => {
-    const result = collection(db, 'chats').onSnapShot(snapShot => { })
-  }, [])
+    const chatsRef = collection(db, 'chats');
+    const unsubscribe = onSnapshot(query(chatsRef), (snapshot) => {
+      setChats(snapshot.docs.map(doc => ({
+        id: doc.id,
+        data: doc.data()
+      })));
+    });
+
+    return unsubscribe;
+  }, []);
+
 
 
   const signOut = () => {
@@ -50,8 +59,10 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView>
-      <ScrollView>
-        <CustomListItem />
+      <ScrollView style={styles.container}>
+        {chats?.map(({ id, data: { chatName } }) => (
+          <CustomListItem key={id} id={id} chatName={chatName} navigation={navigation} />
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
@@ -59,6 +70,9 @@ export default function HomeScreen({ navigation }) {
 
 
 const styles = StyleSheet.create({
+  container: {
+    height: '100%',
+  },
   headerRight: {
     flexDirection: 'row',
     justifyContent: 'space-between',
